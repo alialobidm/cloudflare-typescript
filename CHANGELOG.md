@@ -427,94 +427,613 @@ Full Changelog: [v5.0.0...v5.1.0](https://github.com/cloudflare/cloudflare-types
 
 Full Changelog: [v4.5.0...v5.0.0](https://github.com/cloudflare/cloudflare-typescript/compare/v4.5.0...v5.0.0)
 
+This is a retroactive changelog for our v5.0.0 release. Cloudflare recognizes that the changelog originally published did not provide the detail needed for users to feel confident in this release and failed to outline the meaningful amount of breaking changes it included.
+
+The large amount of breaking changes in this release are primarily due to a change in OpenAPI definitions, which our libraries are based off of, bug fixes and codegen updates that we rely on to read those OpenAPI definitions and produce our SDK libraries. As the codegen is always evolving and improving, so are our code bases.
+
+### Breaking Changes
+
+#### Abuse Reports
+
+- `create`
+  - `reportType` parameter changed from restricted literal union to generic `string` type
+    - `'abuse_dmca' | 'abuse_trademark' | 'abuse_general' | 'abuse_phishing' | 'abuse_children' | 'abuse_threat' | 'abuse_registrar_whois' | 'abuse_ncsei'` -> `string`
+- `AbuseReportsChildrenAbuseReport` → `AbuseReportsCsamReport`
+
+- **All Report Types**
+  - URL separator changed from space/newline to newline only in `urls` field
+  - IP address separator changed from space/newline to newline only in `source_ips` and `destination_ips` fields
+  - Each report type now requires a specific `act` value instead of a union of all types:
+    - `AbuseReportsDmcaReport.act`: must be `'abuse_dmca'`
+    - `AbuseReportsTrademarkReport.act`: must be `'abuse_trademark'`
+    - `AbuseReportsGeneralReport.act`: must be `'abuse_general'`
+    - `AbuseReportsPhishingReport.act`: must be `'abuse_phishing'`
+    - `AbuseReportsCsamReport.act`: must be `'abuse_children'`
+    - `AbuseReportsThreatReport.act`: must be `'abuse_threat'`
+    - `AbuseReportsRegistrarWhoisReport.act`: must be `'abuse_registrar_whois'`
+    - `AbuseReportsNcseiReport.act`: must be `'abuse_ncsei'`
+
+- **AbuseReportsDmcaReport**
+  - `agree`: changed from `0 | 1` to `1` 
+  - `host_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send'`
+  - `owner_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send'`
+  - Optional → Required: `address1`, `agent_name`, `agree`, `city`, `country`, `original_work`, `signature`, `state`, `host_notification`, `owner_notification`
+  - Removed fields: `destination_ips`, `justification`, `ncmec_notification`, `ncsei_subject_representation`, `ports_protocols`, `source_ips`, `trademark_number`, `trademark_office`, `trademark_symbol`
+
+- **AbuseReportsTrademarkReport**
+  - `host_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send'` only
+  - `owner_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send'` only
+  - Optional → Required: `host_notification`, `justification`, `owner_notification`, `trademark_number`, `trademark_office`, `trademark_symbol`
+  - Removed fields: `address1`, `agent_name`, `agree`, `city`, `country`, `destination_ips`, `ncmec_notification`, `ncsei_subject_representation`, `original_work`, `ports_protocols`, `signature`, `source_ips`, `state`
+
+- **AbuseReportsGeneralReport**
+  - `host_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send' | 'send-anon'` (removed 'none')
+  - Optional → Required: `host_notification`, `justification`, `owner_notification`
+  - Removed fields: `address1`, `agent_name`, `agree`, `city`, `country`, `ncmec_notification`, `ncsei_subject_representation`, `original_work`, `signature`, `state`, `trademark_number`, `trademark_office`, `trademark_symbol`
+
+- **AbuseReportsPhishingReport**
+  - `host_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send' | 'send-anon'` (removed 'none')
+  - `owner_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send' | 'send-anon'` (removed 'none')
+  - Optional → Required: `host_notification`, `justification`, `owner_notification`
+  - Removed fields: `address1`, `agent_name`, `agree`, `city`, `country`, `destination_ips`, `ncmec_notification`, `ncsei_subject_representation`, `ports_protocols`, `signature`, `source_ips`, `state`, `trademark_number`, `trademark_office`, `trademark_symbol`
+
+- **AbuseReportsCsamReport**
+  - `host_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send' | 'send-anon'` (removed 'none')
+  - `ncmec_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send' | 'send-anon'` (removed 'none')
+  - Optional → Required: `host_notification`, `justification`, `ncmec_notification`, `owner_notification`
+  - Removed fields: `address1`, `agent_name`, `agree`, `city`, `destination_ips`, `ncsei_subject_representation`, `original_work`, `ports_protocols`, `signature`, `source_ips`, `state`, `trademark_number`, `trademark_office`, `trademark_symbol`
+
+- **AbuseReportsThreatReport**
+  - `host_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send' | 'send-anon'` (removed 'none')
+  - `owner_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send' | 'send-anon'` (removed 'none')
+  - Optional → Required: `host_notification`, `justification`, `owner_notification`
+  - Removed fields: `address1`, `agent_name`, `agree`, `city`, `country`, `destination_ips`, `ncmec_notification`, `ncsei_subject_representation`, `original_work`, `ports_protocols`, `signature`, `source_ips`, `state`, `trademark_number`, `trademark_office`, `trademark_symbol`
+
+- **AbuseReportsRegistrarWhoisReport**
+  - Optional → Required: `owner_notification`
+  - Removed fields: `address1`, `agent_name`, `agree`, `city`, `country`, `destination_ips`, `host_notification`, `justification`, `ncmec_notification`, `ncsei_subject_representation`, `original_work`, `ports_protocols`, `signature`, `source_ips`, `state`, `trademark_number`, `trademark_office`, `trademark_symbol`
+
+- **AbuseReportsNcseiReport**
+  - `host_notification`: changed from `'send' | 'send-anon' | 'none'` to `'send' | 'send-anon'` (removed 'none')
+  - `ncsei_subject_representation`: changed from optional to required `boolean`
+  - Optional → Required: `host_notification`, `ncsei_subject_representation`, `owner_notification`
+  - Removed fields: `address1`, `agent_name`, `agree`, `city`, `destination_ips`, `justification`, `ncmec_notification`, `original_work`, `ports_protocols`, `signature`, `source_ips`, `state`, `trademark_number`, `trademark_office`, `trademark_symbol`
+
+#### Accounts
+
+- `Account`
+  - Added required field `type: 'standard' | 'enterprise'`
+- `AccountUpdateParams.type` 
+  - Added required field `type: 'standard' | 'enterprise'` 
+- `AuditListResponsesCursorLimitPagination` → `AuditListResponsesCursorPaginationAfter` 
+  - `AuditListParams`: now extends `CursorPaginationAfterParams` instead of `CursorLimitPaginationParams`
+
+#### Addressing
+
+- `BGPPrefix.withdraw_if_no_route` → `BGPPrefix.auto_advertise_withdraw`
+- `BGPPrefixEditParams.withdraw_if_no_route` → `BGPPrefixEditParams.auto_advertise_withdraw`
+
+  *Note: This is functionally a rename - the new `auto_advertise_withdraw` field provides the same functionality as the removed `withdraw_if_no_route` field.*
+
+#### AI
+
+- `AssetCreateResponse`: simplified from object to boolean success flag
+  - `{ success: boolean }` -> `{ id: string, bucket_name: string, created_at: string, file_name: string, finetune_id: string, modified_at: string }`
+
+#### Argo
+
+- `SmartRoutingEditResponse`: changed from `unknown | string | null` to structured interface
+  - `id: string` 
+  - `editable: boolean` 
+  - `value: 'on' | 'off'` 
+  - `modified_on?: string` 
+- `SmartRoutingGetResponse`: changed from `unknown | string | null` to structured interface
+  - `id: string` 
+  - `editable: boolean` 
+  - `value: 'on' | 'off'` 
+  - `modified_on?: string` 
+
+#### Brand Protection
+
+- `submit`: 
+  - `BrandProtectionSubmitParams`: removed `url` parameter 
+  - Return type: `Submit` → `BrandProtectionSubmitResponse`
+    - `BrandProtectionSubmitResponse` structure: `{ skipped_urls?: Array<{ [key: string]: unknown }>, submitted_urls?: Array<{ [key: string]: unknown }> }`
+- `urlInfo`: 
+  - `BrandProtectionURLInfoParams`: removed `url` and `url_id` parameters
+  - Return type changed from `Core.APIPromise<Info>` to `Core.PagePromise<BrandProtectionURLInfoResponsesSinglePage, BrandProtectionURLInfoResponse>`
+    - Method now returns paginated results using `SinglePage` instead of a single object                                                                                                   
+    - `BrandProtectionURLInfoResponse` type: `{ [key: string]: unknown }`
+  - `RuleMatch` → `Info.RuleMatch`
+  - `ScanStatus` → `Info.ScanStatus`
+  - `URLInfoModelResults` → `Info.ModelResult` 
+
+#### Cache
+
+  - `VariantEditResponse.value`: changed from `string` to `VariantEditResponse.Value`
+  - `VariantGetResponse.value`: changed from `string` to `VariantGetResponse.Value`
+  - `VariantGetResponse.Value`:
+    - `avif?: Array<string>`
+    - `bmp?: Array<string>`
+    - `gif?: Array<string>`
+    - `jp2?: Array<string>`
+    - `jpeg?: Array<string>`
+    - `jpg?: Array<string>`
+    - `jpg2?: Array<string>`
+    - `png?: Array<string>`
+    - `tif?: Array<string>`
+    - `tiff?: Array<string>`
+    - `webp?: Array<string>` 
+
+#### Cloudforce One
+
+- `Insights` class
+  - Removed `create` method
+  - Removed `delete` method
+  - Removed `edit` method
+  - Removed `get` method
+  - Removed all associated response and parameter types
+
+- `ThreatEventCreateResponse`
+  - removed fields `id`, `accountId`, `indicator`, `indicatorTypeId`, `rawId`, `releasabilityId`
+- `ThreatEventListResponse.ThreatEvent`
+  - removed fields `id`, `accountId`, `indicator`, `indicatorTypeId`, `rawId`, `releasabilityId`
+- `ThreatEventEditResponse`
+  - removed fields `id`, `accountId`, `indicator`, `indicatorTypeId`, `rawId`, `releasabilityId`
+- `ThreatEventGetResponse`
+  - removed fields `id`, `accountId`, `indicator`, `indicatorTypeId`, `rawId`, `releasabilityId`
+
+- `HealthGetResponse`: completely restructured
+  - `items` → `properties`
+  - `Properties` structure (deeply nested with 21 total interfaces):
+    - Top-level fields: `durationMs`, `ok`, `shards`, `totalShards`, `totalSizeBytes`, `totalSizeMB`
+    - `shards` contains nested structure with `items.properties` containing 11 sub-properties including `datasetId`, `date`, `healthCheckMs`, `pageCount`, `pageSize`, `sizeBytes`, `sizeMB`, `startupMs`, `tableStats`, `timedOut`, `totalMs`
+
+#### Custom Pages
+
+- `get`
+  - `irentifier` parameter goes from `string` to to specific literal values:
+    - `string` -> `'waf_block' | 'ip_block' | 'country_challenge' | '500_errors' | '1000_errors' | 'managed_challenge' | 'ratelimit_block'`
+  - return type changes: `CustomPageUpdateResponse | null` → `CustomPageUpdateResponse`
+- `update`
+  - `identifier` parameter goes from `string` to to specific literal values:
+    - `string` -> `'waf_block' | 'ip_block' | 'country_challenge' | '500_errors' | '1000_errors' | 'managed_challenge' | 'ratelimit_block'`
+  - return type changes: `CustomPageUpdateResponse | null` → `CustomPageUpdateResponse`
+- `CustomPageUpdateResponse`: changed from `unknown | string` to structured interface
+  - Fields: `id`, `created_on`, `description`, `modified_on`, `preview_target`, `required_tokens`, `state ('default' | 'customized')`, `url`
+- `CustomPageListResponse`: changed from `unknown` to structured interface
+  - Fields: `id`, `created_on`, `description`, `modified_on`, `preview_target`, `required_tokens`, `state ('default' | 'customized')`, `url`
+- `CustomPageGetResponse`: changed from `unknown | string` to structured interface
+  - Fields: `id`, `created_on`, `description`, `modified_on`, `preview_target`, `required_tokens`, `state ('default' | 'customized')`, `url`
+
+#### DNS
+
+- `ByTime.query`: type changed from `DNSAPI.DNSAnalyticsQuery` to `ByTime.Query`
+  - moved from top-level `DNS` namespace to nested `ByTime.Query` namespace
+- `ByTime.Data.metrics`: type changed from `Array<DNSAPI.DNSAnalyticsNominalMetric>` to `Array<Array<number>>`
+- `DNSAPI.DNSAnalyticsNominalMetric` type alias removed                                                                                       
+- `DNSAPI.DNSAnalyticsQuery` interface removed
+
+#### Durable Objects
+
+- `NamespacesSinglePage` → `NamespacesV4PagePaginationArray`
+- `DurableObjectsCursorLimitPagination` → `DurableObjectsCursorPaginationAfter`
+- `ObjectListParams`: removed `limit` parameter
+  - Previously extended `CursorLimitPaginationParams` (which included `limit?: number`)
+  - Now extends `CursorPaginationAfterParams` (which does not include `limit`)
+
+#### Email Security
+
+- `Properties
+  - `allowlisted_pattern_type` type changed from `string` -> `'quarantine_release' | 'acceptable_sender' | 'allowed_sender' | 'allowed_recipient' | 'domain_similarity' | 'domain_recency' | 'managed_acceptable_sender'`
+  - `whitelisted_pattern_type` type changed from `string` -> `'quarantine_release' | 'acceptable_sender' | 'allowed_sender' | 'allowed_recipient' | 'domain_similarity' | 'domain_recency' | 'managed_acceptable_sender'`
+- `ReclassifyCreateParams
+  - `eml_content` type changed from `string | null` to `string`
+- `DomainListResponse`, `DomainEditResponse`, and `DomainGetResponse` all added a required field:                                                                                               
+  - `regions`: `Array<'GLOBAL' | 'AU' | 'DE' | 'IN' | 'US'>`
+
+#### Filters
+
+- `create`
+  - `FilterCreateParams` structure changed
+    - **Before**: `expression: string`
+    - **After**: `body: Array<FirewallFilterParam>`
+- `update`
+  - `FilterUpdateParams` structure changed
+    - **Before**: `body: unknown`
+    - **After**: optional fields: `description?`, `expression?`, `paused?`, `ref?`
+- `delete`
+  - return type changed: `Core.APIPromise<FirewallFilter>` -> `Core.APIPromise<FilterDeleteResponse>`
+- `bulkDelete`
+  - `FilterBulkDeleteParams`
+    - added required parameter `id: Array<string>`
+  - return type changed: `PagePromise<FirewallFiltersSinglePage, FirewallFilter>` → `APIPromise<FilterBulkDeleteResponse | null>`
+- `bulkUpdate`
+  - `FilterBulkUpdateParams`
+    - added required `body: Array<FilterBulkUpdateParams.Body>` 
+
+#### IAM
+
+- `ResourceGroupListResponsesV4PagePaginationArray` → `ResourceGroupListResponsesSinglePage`
+- `ResourceGroupListParams`: removes pagination parameters `page` and `per_page`
+
+#### KV
+
+- `KeysCursorLimitPagination` → `KeysCursorPaginationAfter`
+- `Namespace` interface: removed field `beta?: boolean`
+
+#### Logpush
+
+- `LogpushJob.max_upload_bytes`: `0 | unknown | null` → `0 | number | null`
+- `LogpushJob.max_upload_interval_seconds`: `0 | unknown | null` → `0 | number | null`
+- `LogpushJob.max_upload_records`: `0 | unknown | null` → `0 | number | null`
+- `JobCreateParams.max_upload_bytes`: `0 | unknown | null` → `0 | number | null`
+- `JobCreateParams.max_upload_interval_seconds`: `0 | unknown | null` → `0 | number | null`
+- `JobCreateParams.max_upload_records`: `0 | unknown | null` → `0 | number | null`
+- `JobUpdateParams.max_upload_bytes`: `0 | unknown | null` → `0 | number | null`
+- `JobUpdateParams.max_upload_interval_seconds`: `0 | unknown | null` → `0 | number | null`
+- `JobUpdateParams.max_upload_records`: `0 | unknown | null` → `0 | number | null`
+
+#### Queues
+
+- `queues.consumers`
+  - `get`
+    - now returns a signle consumer by id rather than listing all consumers.
+    - added parameter: `consumerId: string`
+    - return type changed:`Core.PagePromise<ConsumersSinglePage, Consumer>` -> `Core.APIPromise<Consumer>`
+  - `list`
+    - new method to list consumers instead of `get` 
+
+#### Radar
+
+- `Meta.confidenceInfo`: type changed from nullable to required across all response interfaces. Affects response metadata across all Radar endpoints.
+  - `confidenceInfo: Meta.ConfidenceInfo | null` -> `confidenceInfo: Meta.ConfidenceInfo`
+- `ai.bots.summary.userAgent()` deprecated
+  - Use new `ai.timeseriesGroups` methods instead
+- `ai.timeseriesGroups.userAgent()` deprecated
+  - Use new `summary()`, `timeseries()`, or `timeseriesGroups()` methods instead
+- `radar.attacks.layer7.top.TopAttacksParams.magnitude`: removed parameter
+- `radar.ai.toMarkdown.create()` method signature change
+  - **Before**: `create(params: ToMarkdownCreateParams)` where `params.body` was optional
+  - **After**: `create(body: string | ArrayBufferView | ArrayBuffer | BlobLike, params: ToMarkdownCreateParams)` where `body` is the first required positional parameter
+  - Existing code calling `client.radar.ai.toMarkdown.create({ account_id, body })` needs to change to `client.radar.ai.toMarkdown.create(body, { account_id })` 
+
+#### Rules
+
+- `ItemListResponsesCursorPagination` → `ItemListResponsesCursorPaginationAfter`
+- `BulkOperationGetResponse`: changed from single interface to discriminated union type
+  - **Before**: Single interface with optional `completed` and `error` fields, generic status
+  - **After**: Union of three status-specific interfaces:
+    - `ListsBulkOperationPendingOrRunning`: for status `'pending' | 'running'` 
+    - `ListsBulkOperationCompleted`: for status `'completed'` 
+    - `ListsBulkOperationFailed`: for status `'failed'` 
+- `ItemListResponse` and `ItemGetResponse`: changed from single interface to discriminated union
+  - **Before**: Single interface with all optional fields 
+  - **After**: Union of four item-type-specific interfaces:
+    - `ListsListItemIPFull`: requires `id`, `created_on`, `ip`, `modified_on`
+    - `ListsListItemHostnameFull`: requires `id`, `created_on`, `hostname`, `modified_on`
+    - `ListsListItemRedirectFull`: requires `id`, `created_on`, `redirect`, `modified_on`
+    - `ListsListItemASNFull`: requires `id`, `created_on`, `asn`, `modified_on`
+- `ItemCreateParams.body`: changed to type-specific discriminated unions
+  - **Before**: `Array<Body>` where Body had all fields optional (ip, hostname, redirect, asn)
+  - **After**: Union of four item-type-specific interfaces:
+    - `ListsListItemIPComment`: requires `ip: string`
+    - `ListsListItemRedirectComment`: requires `redirect: RedirectParam`
+    - `ListsListItemHostnameComment`: requires `hostname: HostnameParam`
+    - `ListsListItemASNComment`: requires `asn: number`
+- `ItemUpdateParams.body`: changed to type-specific discriminated unions
+  - **Before**: `Array<Body>` where Body had all fields optional (ip, hostname, redirect, asn)
+  - **After**: Union of four item-type-specific interfaces:
+    - `ListsListItemIPComment`: requires `ip: string`
+    - `ListsListItemRedirectComment`: requires `redirect: RedirectParam`
+    - `ListsListItemHostnameComment`: requires `hostname: HostnameParam`
+    - `ListsListItemASNComment`: requires `asn: number`
+- `ListItem`
+  - `operation_id`: optional → required
+- `ItemCreateResponse`
+  - `operation_id`: optional → required
+- `ItemUpdateResponse`
+  - `operation_id`: optional → required
+- `ItemDeleteResponse`
+  - `operation_id`: optional → required
+- `ListsList`
+  - `id`: optional → required
+  - `created_on`: optional → required
+  - `kind`: optional → required
+  - `modified_on`: optional → required
+  - `name`: optional → required
+  - `num_items`: optional → required
+  - `num_referencing_filters`: optional → required
+- `ListCreateResponse`
+  - `id`: optional → required
+  - `created_on`: optional → required
+  - `kind`: optional → required
+  - `modified_on`: optional → required
+  - `name`: optional → required
+  - `num_items`: optional → required
+  - `num_referencing_filters`: optional → required
+- `ListUpdateResponse`
+  - `id`: optional → required
+  - `created_on`: optional → required
+  - `kind`: optional → required
+  - `modified_on`: optional → required
+  - `name`: optional → required
+  - `num_items`: optional → required
+  - `num_referencing_filters`: optional → required
+- `ListGetResponse`
+  - `id`: optional → required
+  - `created_on`: optional → required
+  - `kind`: optional → required
+  - `modified_on`: optional → required
+  - `name`: optional → required
+  - `num_items`: optional → required
+  - `num_referencing_filters`: optional → required
+- `ListDeleteResponse`
+  - `id`: optional → required
+
+#### Rulesets
+
+- `RewriteRule.ActionParameters.uri`: changed from single interface to discriminated union
+  - **Before**: `uri?: ActionParameters.URI` with optional `path` and `query` fields
+  - **After**: `uri?: ActionParameters.URIPath | ActionParameters.URIQuery`
+  - **Note**: Choose either `URIPath` or `URIQuery` variant instead of combining both in single `URI` object
+- `RewriteRuleParam.ActionParameters.uri`: changed from single interface to discriminated union
+  - **Before**: `uri?: ActionParameters.URI` with optional `path` and `query` fields
+  - **After**: `uri?: ActionParameters.URIPath | ActionParameters.URIQuery`
+  - **Note**: Choose either `URIPath` or `URIQuery` variant instead of combining both in single `URI` object
+- `RewriteRule.ActionParameters.URIPath`: `path` field is required (not optional)
+- `RewriteRuleParam.ActionParameters.URIQuery`: `query` field is required
+- **Type Removals**:
+  - `RewriteURIPart` type removed from exports
+  - `RewriteURIPartParam` type removed from exports
+- `RedirectRule.ActionParameters.FromList` (applies to both RedirectRule and RedirectRuleParam):
+  - `key`: optional → required
+  - `name`: optional → required
+- `RedirectRule.ActionParameters.FromValue` (applies to both RedirectRule and RedirectRuleParam):
+  - `target_url`: optional → required
+  - **Interface restructuring**: `StaticURLRedirect` and `DynamicURLRedirect` interfaces removed, replaced with unified `TargetURL` interface
+- `CompressResponseRule.ActionParameters` (applies to both CompressResponseRule and CompressResponseRuleParam):
+  - `algorithms`: optional → required
+- `SetCacheSettingsRule.ActionParameters.CacheKey.CustomKey`:
+  - `query_string` type restructured from union `IncludedQueryStringParameters | ExcludedQueryStringParameters` to unified `QueryString` interface
+- `SetCacheSettingsRule.ActionParameters.EdgeTTL.StatusCodeTTL`:
+  - `status_code_value` field removed
+- `RuleCreateParams`
+  - `CompressionRule` → `ResponseCompressionRule`
+  - `JavascriptChallengeRule` → `JavaScriptChallengeRule`
+  - `OriginRule` → `RouteRule`
+  - `SetConfigRule` → `SetConfigurationRule`
+- `RuleEditParams`
+  - `CompressionRule` → `ResponseCompressionRule`
+  - `JavascriptChallengeRule` → `JavaScriptChallengeRule`
+  - `OriginRule` → `RouteRule`
+  - `SetConfigRule` → `SetConfigurationRule`
+
+#### Secrets Store
+
+- `SecretEditParams`
+  - Removed: `name: string` 
+  - Removed: `value?: string` 
+- `SecretDuplicateParams.scopes` added as required parameter
+
+#### Shared
+
+- `TokenPolicy.resources`: type structure changed from mixed to union
+  - **Before**: `{ [key: string]: string | { [key: string]: string } }` - single object with mixed value types
+  - **After**: `{ [key: string]: string } | { [key: string]: { [key: string]: string } }` - union of flat or nested object types
+- `TokenPolicyParam.resources`: type structure changed from mixed to union
+  - **Before**: `{ [key: string]: string | { [key: string]: string } }` - single object with mixed value types
+  - **After**: `{ [key: string]: string } | { [key: string]: { [key: string]: string } }` - union of flat or nested object types
+- `CloudflareTunnel.remote_config`: deprecated 
+  - Use `config_src` field instead to determine tunnel configuration source
+
+#### Snippets
+
+- `SnippetsSinglePage` → `SnippetListResponsesV4PagePaginationArray`
+- `update`
+  - return type changed: `Core.APIPromise<Snippet>` -> `Core.APIPromise<SnippetUpdateResponse>`
+- `list`
+  - return type changed: `Core.PagePromise<SnippetsSinglePage, Snippet>` -> `Core.PagePromise<SnippetListResponsesV4PagePaginationArray, SnippetListResponse>`
+- `get`
+  - return type changed: `Core.APIPromise<Snippet>` -> `Core.APIPromise<SnippetGetResponse>`
+- `delete`
+  - return type changed: `Core.APIPromise<SnippetDeleteResponse>` -> `Core.APIPromise<SnippetDeleteResponse | null>`
+- `Snippet` interface replaced with specialized response types:
+  - `SnippetUpdateResponse`
+  - `SnippetListResponse`
+  - `SnippetGetResponse`
+- `SnippetDeleteResponse`: type changed
+  - **Before**: `{ errors, messages, success }`
+  - **After**: `string | null`
+- `SnippetUpdateParams.files`: optional → required, `string?` ->  `Array<Core.Uploadable>`
+- `SnippetUpdateParams`
+  - `metadata`: optional → required
+  - `metadata.main_module`: optional → required
+
+#### Snippets Rules
+
+- `rules`
+  - `delete()` return type changed: `Core.APIPromise<RuleDeleteResponse>` -> `Core.PagePromise<RuleDeleteResponsesSinglePage, RuleDeleteResponse>`
+- `RuleUpdateResponse`
+  - `id`, `expression`, `last_updated`, `snippet_name` changed from optional → required
+- `RuleListResponse`
+  - `id`, `expression`, `last_updated`, `snippet_name` changed from optional → required
+- `RuleDeleteResponse`: structure changed from success object to rule object
+  - **Before**: `{ errors: Array<Shared.ResponseInfo>, messages: Array<Shared.ResponseInfo>, success: true }`
+  - **After**: `{ id: string, expression: string, last_updated: string, snippet_name: string, description?: string, enabled?: boolean }`
+- `RuleUpdateParams`
+  - `rules`: optional → required
+  - `Rule.expression`: optional → required
+  - `Rule.snippet_name`: optional → required
+
+#### SSL
+
+- `ssl.recommendations.get()`: marked as deprecated                                                                                                    
+    - SSL/TLS Recommender has been decommissioned in favor of Automatic SSL/TLS 
+- `RecommendationGetResponse`: field requirement changes
+  - Optional → required: `id`, `modified_on`, `value`
+  - `value`: type changed: `'flexible' | 'full' | 'strict'` -> `'auto' | 'custom'`
+  - added required fields: `editable`
+
+#### Vectorize
+
+- `IndexInsertParams`
+  - `body` type changed from `string` to `Core.Uploadable`
+- `IndexUpsertParams`
+  - `body` type changed from `string` to `Core.Uploadable`
+
+#### Workers
+
+- `MigrationStep` interface: now empty interface
+  - Removed fields: `deleted_classes`, `new_classes`, `new_sqlite_classes`, `renamed_classes`, `transferred_classes`
+- `SingleStepMigration` interface: now empty interface
+  - Removed fields: `deleted_classes`, `new_classes`, `new_sqlite_classes`, `new_tag`, `old_tag`, `renamed_classes`, `transferred_classes`
+
+- `workers.scripts.deployments`
+  - `get()` method signature and behavior changed
+    - signature changed: `get(scriptName, params)` → `get(scriptName, deploymentId, params)`
+    - return type changed: `DeploymentGetResponse` → `Deployment`
+    - behavior changed: previously returned list of all deployments, now returns single deployment by ID
+  - `list()`: new method for getting list of deployments
+    - returns `DeploymentListResponse`
+  - `create()` return type changed: `DeploymentCreateResponse` → `Deployment`
+  - `Deployment` interface field changes:
+    - Fields changed from optional → required: `id`, `created_on`, `source`
+    - Structure for nested types: `annotations` changed from flat interface to `Deployment.Annotations` namespace
+    - Added field: `annotations['workers/triggered_by']` - operation that triggered deployment creation
+  - `DeploymentParam` interface removed
+    - Replaced by `DeploymentCreateParams.Annotations` for create operations
+
+- `client.workers.scripts.versions`
+  - `VersionCreateResponse.Resources.bindings`: structure flattened
+    - **Before**: `bindings?: Resources.Bindings` where `Bindings.result` contained array
+    - **After**: `bindings?: Array<WorkersBindingKind...>`: direct array, no `result` wrapper
+    - All binding type interfaces moved from `Resources.Bindings.*` namespace to `Resources.*` namespace
+
+#### Workers for Platforms
+
+- `ScriptUpdateParams.files` type changed from object to array
+  - **Before**: `files?: { [key: string]: Core.Uploadable }` 
+  - **After**: `files?: Array<Core.Uploadable>` 
+- `SettingEditResponse.migrations` field removed
+- `SettingGetResponse.migrations` field removed
+- `SettingEditResponse.WorkersMultipleStepMigrations` interface removed
+- `SettingGetResponse.WorkersMultipleStepMigrations` interface removed
+- `ContentUpdateParams` index signature removed
+  - **Before**: `[k: string]: Array<Core.Uploadable> | string | WorkersAPI.WorkerMetadataParam | undefined;`
+  - **After**: Only explicitly defined properties allowed 
+
+#### Zero Trust
+
+- `CustomPageWithoutHTMLsSinglePage` → `CustomPageWithoutHTMLsV4PagePaginationArray`
+- `GroupListResponsesSinglePage` → `GroupListResponsesV4PagePaginationArray`
+- `PolicyListResponsesSinglePage` → `PolicyListResponsesV4PagePaginationArray`
+- `ServiceTokensSinglePage` → `ServiceTokensV4PagePaginationArray`
+- `TagsSinglePage` → `TagsV4PagePaginationArray`
+- `ApplicationListResponsesSinglePage` → `ApplicationListResponsesV4PagePaginationArray`
+- `CertificatesSinglePage` → `CertificatesV4PagePaginationArray`
+- `UserListResponsesSinglePage` → `UserListResponsesV4PagePaginationArray`
+- `CAsSinglePage` → `CAsV4PagePaginationArray`
+- `ZeroTrustGroupsSinglePage` → `ZeroTrustGroupsV4PagePaginationArray`
+- `UpdateListResponsesSinglePage` → `UpdateListResponsesV4PagePaginationArray`
+- `AccessUsersSinglePage` → `AccessUsersV4PagePaginationArray`
+- `IdentityProviderListResponsesSinglePage` → `IdentityProviderListResponsesV4PagePaginationArray`
+
+- `DeviceEnrollmentPermissionsApplication`
+  - removed `footer_links`
+  - removed `landing_page_design`
+  - removed `scim_config`
+  - removed `skip_app_launcher_login_page`
+  - Affects: `ApplicationCreateResponse`, `ApplicationUpdateResponse`, `ApplicationListResponse`, `ApplicationGetResponse`
+- `BrowserIsolationPermissionsApplication`
+  - removed `footer_links`
+  - removed `landing_page_design`
+  - removed `scim_config`
+  - removed `skip_app_launcher_login_page`
+  - Affects: `ApplicationCreateResponse`, `ApplicationUpdateResponse`, `ApplicationListResponse`, `ApplicationGetResponse`
+- `BookmarkApplication`
+  - removed `scim_config`
+  - Affects: `ApplicationCreateResponse`, `ApplicationUpdateResponse`, `ApplicationListResponse`, `ApplicationGetResponse`
+- `InfrastructureApplication`
+  - removed `scim_config`
+  - Affects: `ApplicationCreateResponse`, `ApplicationUpdateResponse`, `ApplicationListResponse`, `ApplicationGetResponse`
+- `AppLauncherApplication`
+  - removed `scim_config`
+  - Affects: `ApplicationCreateResponse`, `ApplicationUpdateResponse`, `ApplicationListResponse`, `ApplicationGetResponse`
+- `BrowserRdpApplication`
+  - removed `scim_config`
+  - Affects: `ApplicationCreateResponse`, `ApplicationUpdateResponse`, `ApplicationListResponse`, `ApplicationGetResponse`
+
+- `DeviceEnrollmentPermissionsApplication.FooterLink` interface removed
+- `DeviceEnrollmentPermissionsApplication.LandingPageDesign` interface removed
+- `DeviceEnrollmentPermissionsApplication.SCIMConfig` interface removed
+- `BookmarkApplication.SCIMConfig` interface removed
+- `BrowserIsolationPermissionsApplication.FooterLink` interface removed
+- `BrowserIsolationPermissionsApplication.LandingPageDesign` interface removed
+- `BrowserIsolationPermissionsApplication.SCIMConfig` interface removed
+
+- `ApplicationCreateParams.BookmarkApplication` → `ApplicationCreateParams.AccessBookmarkProps`
+- `ApplicationUpdateParams.BookmarkApplication` → `ApplicationUpdateParams.AccessBookmarkProps`
+
+- `BrowserRdpApplication`
+  - `protocol` field changed: `SSH` → `RDP`
+  - Applies to: `ApplicationCreateResponse`, `ApplicationUpdateResponse`, `ApplicationListResponse`, `ApplicationGetResponse`
+
+#### Zones
+
+- `CustomNameserverGetResponse`
+  - `errors` type changed from `Array<Shared.ResponseInfo>` to `Array<CustomNameserverGetResponse.Error>`
+  - `messages` type changed from `Array<Shared.ResponseInfo>` to `Array<CustomNameserverGetResponse.Message>`
+
+  ---
+
 ### Features
 
-* **api:** api update ([82e1127](https://github.com/cloudflare/cloudflare-typescript/commit/82e112755d4a348aaf4c3a5d08881c75c78109dd))
-* **api:** api update ([546e780](https://github.com/cloudflare/cloudflare-typescript/commit/546e780b9d8cb7954c42215e56d546e8362ede36))
-* **api:** api update ([6f8c273](https://github.com/cloudflare/cloudflare-typescript/commit/6f8c273272e60a403abc0968165b528063265511))
-* **api:** api update ([414d04c](https://github.com/cloudflare/cloudflare-typescript/commit/414d04c35b63776b4a967a42c87762d462f022ab))
-* **api:** api update ([4cf72eb](https://github.com/cloudflare/cloudflare-typescript/commit/4cf72eb5f3bd06c562636e3e7d7da1ed8f8fbd7b))
-* **api:** api update ([450515b](https://github.com/cloudflare/cloudflare-typescript/commit/450515b26ab45c225366ff01530bcb7d8c9b80b8))
-* **api:** api update ([0f8f0a7](https://github.com/cloudflare/cloudflare-typescript/commit/0f8f0a76cd8e51c130424924e6559bb535daf0be))
-* **api:** api update ([20cebdb](https://github.com/cloudflare/cloudflare-typescript/commit/20cebdb0a8417aa525484ec2db92b01ffc00a378))
-* **api:** api update ([e8c259c](https://github.com/cloudflare/cloudflare-typescript/commit/e8c259ca25011fd47334c3d84672d1533ecc979f))
-* **api:** api update ([47305fb](https://github.com/cloudflare/cloudflare-typescript/commit/47305fb7d39d82b18f0256dfab50ded951309cae))
-* **api:** api update ([8bf677c](https://github.com/cloudflare/cloudflare-typescript/commit/8bf677c05d407896e22e948bb52248189aa45b4b))
-* **api:** api update ([750128a](https://github.com/cloudflare/cloudflare-typescript/commit/750128adb212ad8233b31c713e6aebe61bd68b23))
-* **api:** api update ([f955e7b](https://github.com/cloudflare/cloudflare-typescript/commit/f955e7bcc2013edd64bed442a1d076528fff5edc))
-* **api:** api update ([5ed5b2c](https://github.com/cloudflare/cloudflare-typescript/commit/5ed5b2c2e0a60533f4b2f72fbff8ccac9b2d7d30))
-* **api:** api update ([592cad4](https://github.com/cloudflare/cloudflare-typescript/commit/592cad4e196053c88a97b432b09d934252458bca))
-* **api:** api update ([09369d7](https://github.com/cloudflare/cloudflare-typescript/commit/09369d77a4726f81aab2a90e728f0df5e9c163fa))
-* **api:** api update ([5407216](https://github.com/cloudflare/cloudflare-typescript/commit/540721624daf78bfb11367c764dd45625b783e3b))
-* **api:** api update ([505ed05](https://github.com/cloudflare/cloudflare-typescript/commit/505ed05ccd4862749c963768f51058219b054ff4))
-* **api:** api update ([4b21838](https://github.com/cloudflare/cloudflare-typescript/commit/4b21838ca000845afe08774557dd8139c2a78924))
-* **api:** api update ([4057d27](https://github.com/cloudflare/cloudflare-typescript/commit/4057d27daf369efe9bad499fdb82227478e39cf6))
-* **api:** api update ([f542663](https://github.com/cloudflare/cloudflare-typescript/commit/f542663422cd85cdb559293fdbf2f5d59d790b53))
-* **api:** api update ([8d556c6](https://github.com/cloudflare/cloudflare-typescript/commit/8d556c6ab570e0e7410e3f14fe37d3361472e085))
-* **api:** api update ([7bf3751](https://github.com/cloudflare/cloudflare-typescript/commit/7bf375152e2cf7f6c7636ccee9a6de849e9c5d49))
-* **api:** api update ([d415fe6](https://github.com/cloudflare/cloudflare-typescript/commit/d415fe61b22d99c642550e3941580a28b2d566e4))
-* **api:** api update ([844ba48](https://github.com/cloudflare/cloudflare-typescript/commit/844ba484e18bcf124bebc52a167d0accc5a72d58))
-* **api:** api update ([08b415f](https://github.com/cloudflare/cloudflare-typescript/commit/08b415f4bed2e656663cb342b00bcfaf89cfc287))
-* **api:** api update ([5611f5a](https://github.com/cloudflare/cloudflare-typescript/commit/5611f5a75cbbabbeb4ab3336e081cb15d7d0c791))
-* **api:** api update ([707c8e8](https://github.com/cloudflare/cloudflare-typescript/commit/707c8e8281b14ba1453d4995184f25835c1e7b48))
-* **api:** api update ([f1abb27](https://github.com/cloudflare/cloudflare-typescript/commit/f1abb2726ee7aa37f10dbf477f6251019d2f5a8f))
-* **api:** api update ([5128329](https://github.com/cloudflare/cloudflare-typescript/commit/5128329b279ee0936fbb18da8fe0177dcabeeb70))
-* **api:** api update ([4203673](https://github.com/cloudflare/cloudflare-typescript/commit/42036736b0a7326015f3eb37073afda70d3b278c))
-* **api:** api update ([8339d1b](https://github.com/cloudflare/cloudflare-typescript/commit/8339d1bf24de714a26fe110b2cd254f15bf43d5a))
-* **api:** api update ([56ec6a4](https://github.com/cloudflare/cloudflare-typescript/commit/56ec6a4da564399857e86ee89dfa3616425cb684))
-* **api:** api update ([455b40f](https://github.com/cloudflare/cloudflare-typescript/commit/455b40fbda3008fe61cfa605b6fb5fbfee50f9e1))
-* **api:** api update ([faca212](https://github.com/cloudflare/cloudflare-typescript/commit/faca212882af72073b7e5ff9dd474d6ed181013e))
-* **api:** api update ([7d842ba](https://github.com/cloudflare/cloudflare-typescript/commit/7d842babdf5ef180edf499fcb9691dc0f871b55c))
-* **api:** api update ([fef43ec](https://github.com/cloudflare/cloudflare-typescript/commit/fef43ec41c8edad0bd394a1d63a6bf974f9b1426))
-* **api:** api update ([0239b4f](https://github.com/cloudflare/cloudflare-typescript/commit/0239b4f5af23bc80f13cfab247250ea834e81de5))
-* **api:** api update ([b08950b](https://github.com/cloudflare/cloudflare-typescript/commit/b08950b360c0d5f62b2b464fefc779046e2fd95e))
-* **api:** api update ([7b8e864](https://github.com/cloudflare/cloudflare-typescript/commit/7b8e864ccd6a5113f0dc19c795c745e4276839dd))
-* **api:** api update ([67d59b8](https://github.com/cloudflare/cloudflare-typescript/commit/67d59b8e48eb61a8a6e8fc7a6d7865e435087605))
-
-
-### Bug Fixes
-
-* **client:** correctly encode multipart file arrays ([c363ed2](https://github.com/cloudflare/cloudflare-typescript/commit/c363ed2860dcfd06079d1ff75fbede8bf89b3d09))
-* **examples/workers:** use correct files input structure ([2ad4aba](https://github.com/cloudflare/cloudflare-typescript/commit/2ad4abae0c88e477c7ce462f043c3f4b5a2e4e82))
-* **kv:** use json multipart syntax ([d1168df](https://github.com/cloudflare/cloudflare-typescript/commit/d1168df3ca9fcf894ca4802e8bef5afaa8bdc836))
-* **methods:** define methods with parameters and binary body correctly ([9e42614](https://github.com/cloudflare/cloudflare-typescript/commit/9e426141f704602afe31da83f5dad6a1babfcc44))
-* **types:** define binary request + path param types correctly ([1467005](https://github.com/cloudflare/cloudflare-typescript/commit/146700512ec45c9de587572670ef38da77add9f1))
-* **types:** reference pagination type properly ([c1cfad6](https://github.com/cloudflare/cloudflare-typescript/commit/c1cfad6e8b8fdbdb1c769ecbb41e5a3631b4eb93))
-* **workers/versions:** use json multipart syntax ([ab9a992](https://github.com/cloudflare/cloudflare-typescript/commit/ab9a9927e4345115b103eb63221f50e3606864a8))
-
-
-### Chores
-
-* **api:** upload stainless config from cloudflare-config ([2d9d75e](https://github.com/cloudflare/cloudflare-typescript/commit/2d9d75e24946f6c18956a9292fffd38883df4c95))
-* **api:** upload stainless config from cloudflare-config ([30ac360](https://github.com/cloudflare/cloudflare-typescript/commit/30ac360ec0e4dd9c8c249d306850361c322383e3))
-* **api:** upload stainless config from cloudflare-config ([0439793](https://github.com/cloudflare/cloudflare-typescript/commit/043979339fabdf1296aad72334d3a7fca2621733))
-* **api:** upload stainless config from cloudflare-config ([0bef919](https://github.com/cloudflare/cloudflare-typescript/commit/0bef91904e4a4a9335a170dc529695f11eb0acbb))
-* **api:** upload stainless config from cloudflare-config ([9f68a33](https://github.com/cloudflare/cloudflare-typescript/commit/9f68a33862c8dddd549f7a35bf28069517e64eee))
-* **api:** upload stainless config from cloudflare-config ([5e68845](https://github.com/cloudflare/cloudflare-typescript/commit/5e68845a763c01d36e7a6a73b63421466b0f65e4))
-* **api:** upload stainless config from cloudflare-config ([393df1d](https://github.com/cloudflare/cloudflare-typescript/commit/393df1dd14f7b617fd7981dd5f0f195280f2fd1e))
-* **api:** upload stainless config from cloudflare-config ([d91d2f0](https://github.com/cloudflare/cloudflare-typescript/commit/d91d2f09fe5bc1e9fbaf9aaf62fae6490f4e3477))
-* **api:** upload stainless config from cloudflare-config ([5f2237b](https://github.com/cloudflare/cloudflare-typescript/commit/5f2237bc35fb24a7c300d50f1fde80e019427934))
-* **api:** upload stainless config from cloudflare-config ([e6f0bcc](https://github.com/cloudflare/cloudflare-typescript/commit/e6f0bcc64c514667b751b85501bf17719be200c9))
-* **api:** upload stainless config from cloudflare-config ([6750686](https://github.com/cloudflare/cloudflare-typescript/commit/6750686b8c3d19bb3f486d741ad9550039dbad02))
-* **api:** upload stainless config from cloudflare-config ([e154418](https://github.com/cloudflare/cloudflare-typescript/commit/e1544186b24a6abcf13d974bcc58f0f2b6885de0))
-* **api:** upload stainless config from cloudflare-config ([b4e0415](https://github.com/cloudflare/cloudflare-typescript/commit/b4e04158da1bb348cfb08f692cfd64a10708c23f))
-* **api:** upload stainless config from cloudflare-config ([ccf8a40](https://github.com/cloudflare/cloudflare-typescript/commit/ccf8a40a0fa8ecff2b38dc6902a793313ed29e42))
-* **api:** upload stainless config from cloudflare-config ([26e5829](https://github.com/cloudflare/cloudflare-typescript/commit/26e58297407804597161880791d7ca8c541e88a8))
-* **api:** upload stainless config from cloudflare-config ([57c2584](https://github.com/cloudflare/cloudflare-typescript/commit/57c2584c49bca7da6c1475f6b8192e567434300f))
-* **api:** upload stainless config from cloudflare-config ([b80775e](https://github.com/cloudflare/cloudflare-typescript/commit/b80775eb66d13ac543c11645f34186cd00988852))
-* **api:** upload stainless config from cloudflare-config ([5a4fa8e](https://github.com/cloudflare/cloudflare-typescript/commit/5a4fa8e74a6043b5948c28a08e0d885ad5e94c55))
-* **api:** upload stainless config from cloudflare-config ([c79965d](https://github.com/cloudflare/cloudflare-typescript/commit/c79965da601db233f93527a350ea9eb6478b1595))
-* **api:** upload stainless config from cloudflare-config ([b97353d](https://github.com/cloudflare/cloudflare-typescript/commit/b97353dff144dc1c88de4a54ec8584fd322d43e3))
-* **api:** upload stainless config from cloudflare-config ([7c24b14](https://github.com/cloudflare/cloudflare-typescript/commit/7c24b14521f92d9c80bb1a5f039c43bb33c62c1b))
-* **api:** upload stainless config from cloudflare-config ([03790cc](https://github.com/cloudflare/cloudflare-typescript/commit/03790cc32ca9e8930a770468349f346d4fb0de26))
-* **api:** upload stainless config from cloudflare-config ([72c4336](https://github.com/cloudflare/cloudflare-typescript/commit/72c433647949e8c4aa7f2323fc1b0ebb94cacf64))
-* **api:** upload stainless config from cloudflare-config ([b816588](https://github.com/cloudflare/cloudflare-typescript/commit/b8165887056f71717deaf9f15083c4266c426267))
-* **client:** dont throw a validation error for missing auth headers if using custom fetch ([109846d](https://github.com/cloudflare/cloudflare-typescript/commit/109846dcf989fdd233e48e6b2825ff614fccfa70))
-* **deps:** update dependency node-fetch to v2.6.13 ([c80bcc7](https://github.com/cloudflare/cloudflare-typescript/commit/c80bcc745fb3e92664e5c196aa7c633c10da892a))
-* **internal:** formatting change ([d27a5af](https://github.com/cloudflare/cloudflare-typescript/commit/d27a5af7933d4ca923788c22a6fd41416879d17b))
-* **internal:** update comment in script ([6114cd0](https://github.com/cloudflare/cloudflare-typescript/commit/6114cd05308867542a61d94158c70ad28deb7ae6))
-* update @stainless-api/prism-cli to v5.15.0 ([8e313d6](https://github.com/cloudflare/cloudflare-typescript/commit/8e313d66854ac6c476b20abd364d0b3a8308ed49))
-* update CI script ([b9ea34e](https://github.com/cloudflare/cloudflare-typescript/commit/b9ea34ebe5e04f9a44e11c71883374a072525f8c))
+- **abuse-reports**: restructure report types with specific interfaces per category
+- **accounts**: support optional type field in create params, add pagination support with limit parameter for audit logs
+- **addressing**: add auto_advertise_withdraw field for BGP prefixes, remove withdraw_if_no_route field
+- **ai**: add support for multimodal embeddings, add creator field to finetune assets
+- **ai-gateway**: add DLP support with action, enabled, and profiles fields, add store_id field, support new filter parameters for logs (authentication, wholesale, compatibilityMode)
+- **alerting**: expand webhook support for Datadog, Discord, Feishu, Google Chat, Opsgenie, Slack, and Splunk
+- **argo**: replace unknown types with structured responses for smart routing, update tiered caching documentation
+- **bot-management**: add is_robots_txt_managed and bm_cookie_enabled fields
+- **brand-protection**: add new query, match, logo, and logo-match resources with create, delete, bulk, download, and get methods
+- **browser-rendering**: add custom_ai parameter for custom AI model support
+- **cache**: update documentation for cache settings, add proper typing for variants field
+- **cloudforce-one**: add BinaryStorage resource with create and get methods, remove Insights resource methods (create, delete, edit, get), restructure dataset health response
+- **custom-nameservers**: update documentation
+- **custom-pages**: change identifier parameter to specific enum values, replace unknown types with structured responses
+- **diagnostics**: add EndpointHealthchecks resource with full CRUD operations
+- **dns**: change analytics query metrics from nominal arrays to number arrays, update DNS record documentation
+- **durable-objects**: add pagination support with limit parameter for namespaces and objects
+- **email-security**: add findings and htmltext_structure_hash fields to investigate responses, support new filter parameters (subject, status, pattern), add escalated_submission_id to reclassify params, add regions field to domains
+- **filters**: support bulk operations with array-based create params, add bulk delete with id query parameter, restructure bulk update params
+- **iam**: change resource groups pagination to SinglePage
+- **images**: add creator field for filtering and setting image creator
+- **kv**: add limit parameter support, add metadata field documentation, remove beta field from namespace
+- **load-balancers**: update documentation formatting
+- **logpush**: add audit_logs_v2 dataset option, change max_upload field types to support number values
+- **magic-transit**: add IPv6 support with interface_address6 field, add BGP configuration fields (customer_asn, extra_prefixes, md5_key), add event kind filter parameter
+- **network-interconnects**: add speed field with bandwidth options from 50M to 50G
+- **origin-post-quantum-encryption**: update documentation
+- **queues**: add Subscriptions resource with create, update, list, and delete methods for event subscriptions from multiple sources (images, KV, R2, Super Slurper, Vectorize, Workers AI, Workers Builds, Workflows), add consumers.list method for paginated consumer listing, change consumers.get to fetch single consumer by ID
+- **r2**: add ciphers field for custom domain TLS configuration
+- **radar**: add Certificate Transparency monitoring with Authorities, CT, and Logs resources, support new methods for certificate transparency data
+- **rules**: restructure bulk operation responses with specific types for pending/running/completed/failed states, make operation_id required, add exclude_exact_hostname field to hostname type
+- **rulesets**: add new rule types (ResponseCompressionRule, JavaScriptChallengeRule, RouteRule, SetConfigurationRule), restructure ActionParameters with discriminated unions
+- **secrets-store**: add ai_gateway scope option, add scopes and comment fields to various operations, change edit method to only accept comment and scopes fields
+- **shared**: add config_src field to CloudflareTunnel, add email field to Member type, deprecate remote_config field
+- **snippets**: change list pagination to V4PagePaginationArray, make rules and files parameters required in update operations, add id and last_updated fields
+- **spectrum**: make ip_firewall, proxy_protocol, and tls fields optional
+- **ssl**: add validation_errors and validation_records fields to certificate packs, expand certificate type enum, deprecate recommendations.get method
+- **stream**: add live-inprogress status option, add video_name parameter for exact string match filtering
+- **url-normalization**: add none option to scope field
+- **vectorize**: add listVectors method for paginated vector ID listing, change insert and upsert body parameter to support file uploads
+- **workers**: add Beta resource for Workers beta features, add Versions resource for version management, add new Workers resource with enhanced functionality
+- **workers-for-platforms**: add trusted_workers field to dispatch namespaces, add compatibility fields (compatibility_date, compatibility_flags), add cpu_ms limits field
+- **workflows**: add cursor parameter to instance list params
+- **zero-trust**: change multiple list operations to V4PagePaginationArray pagination, add new DLP entry types (custom, predefined, integration, exact data, document fingerprint, word list), add inspection field to gateway settings, add linked app token rule support
+- **zones**: expand browser_cache_ttl documentation with plan-specific minimums, deprecate Mirage feature, add structured error and message types to custom nameservers
 
 ## 4.5.0 (2025-07-16)
 
